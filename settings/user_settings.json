@@ -1,0 +1,135 @@
+{
+  "_comment": "KrylabsVR User Settings - v2.0.0",
+  "_description": "Customize visualization and interaction parameters. This file is loaded at startup.",
+  "_documentation": "See docs/DEVELOPER.md for detailed setting descriptions",
+  
+  "navigation": {
+    "_comment": "2D Desktop Mode Navigation Settings",
+    "moveSpeed": 2.5,
+    "fastSpeedMultiplier": 6.0,
+    "slowSpeedMultiplier": 0.083,
+    "mouseSensitivity": 0.002,
+    "fovZoomSpeed": 5,
+    "minFOV": 30,
+    "maxFOV": 120,
+    "rdpModeEnabled": false,
+    "deltaClampEnabled": false,
+    "deltaClampMax": 50
+  },
+  
+  "vrNavigation": {
+    "_comment": "VR Mode Navigation Settings (placeholder)",
+    "baseMoveSpeed": 2.0,
+    "baseRotationSpeed": 1.0,
+    "moveSpeedBoost": 2.0,
+    "rotationDeBoost": 0.5
+  },
+  
+  "visualization": {
+    "_comment": "Node and element display settings",
+    "baseNodeSize": 0.05,
+    "nodeSizeOptions": [0.25, 1.0, 4.0],
+    "defaultNodeColor": "#43e97b",
+    "modifiedNodeColor": "#ff0000",
+    "duplicateNodeColor": "#ffa500",
+    "selectedElementColor": "#ff00ff",
+    "pinnedNodeColor": "#ffff00",
+    "highlightColor": "#ff00ff",
+    "femOpacities": [1.0, 0.25, 0.5, 0.75],
+    "shrinkFactor": 0.18,
+    "barShrinkFactor": 0.2,
+    "wagonwheelThreshold": 15
+  },
+  
+  "manipulation": {
+    "_comment": "Node dragging and manipulation settings",
+    "nodeDragSpeed": 1.0,
+    "pinNodeEnabled": true,
+    "showGuideCurves": true,
+    "guideLineLength": 1.0
+  },
+  
+  "elementColors": {
+    "_comment": "Colors for different element types (hex color strings)",
+    "shells": "#4a9eff",
+    "bars": "#ff6b6b",
+    "rbe2": "#ffd93d",
+    "rbe3": "#6bcf7f",
+    "gridPrimary": "#43e97b",
+    "gridSecondary": "#2a2a3e"
+  },
+  
+  "geometry": {
+    "_comment": "CAD geometry (IGES/STEP) visualization colors",
+    "surfaceColor": "#99cc66",
+    "edgeColor": "#88bb55",
+    "wireframeOpacity": 0.8
+  },
+  
+  "environment": {
+    "_comment": "Scene background and lighting colors",
+    "backgroundColor": "#1a1a2e",
+    "ambientLight": "#ffffff",
+    "ambientIntensity": 0.6,
+    "directionalLight": "#ffffff",
+    "directionalIntensity": 0.8,
+    "hemisphereTop": "#ddeeff",
+    "hemisphereBottom": "#0f0e0d",
+    "hemisphereIntensity": 0.5
+  },
+  
+  "ui": {
+    "_comment": "UI element colors (crosshairs, axes, etc.)",
+    "crosshairColor": "#ffff00",
+    "xAxisColor": "#ff0000",
+    "yAxisColor": "#00ff00",
+    "zAxisColor": "#0000ff"
+  },
+  
+  "contours": {
+    "_comment": "Contour visualization settings",
+    "colorScheme": "viridis",
+    "customColors": ["#440154", "#31688e", "#35b779", "#fde724"],
+    "numLevels": 10,
+    "smoothing": true,
+    "showLabels": true,
+    "autoRange": true
+  },
+  
+  "performance": {
+    "_comment": "Performance and rendering settings",
+    "interrogationThrottle": 100,
+    "fpsUpdateInterval": 0.5,
+    "antialiasing": true,
+    "pixelRatio": "auto",
+    "shadowsEnabled": false,
+    "proximityCheckInterval": 30
+  },
+  
+  "export": {
+    "_comment": "Export settings for BDF, session, and screenshots",
+    "screenshotWhiteBackground": true,
+    "bdfFloatPrecision": 8,
+    "sessionAutoSave": false,
+    "sessionAutoSaveInterval": 300,
+    "timestampFormat": "YYYYMMDD_HHMMSS"
+  },
+  
+  "uiSettings": {
+    "_comment": "User interface behavior settings",
+    "helpOverlayAutoFade": true,
+    "helpOverlayFadeTime": 10,
+    "topBarEnabled": true,
+    "menuAnimations": true,
+    "keyRepeatDelay": 500
+  },
+  
+  "advanced": {
+    "_comment": "Advanced settings - modify with care",
+    "debugMode": false,
+    "enableExperimentalFeatures": false,
+    "logLevel": "info",
+    "hardwareAcceleration": true,
+    "preserveDrawingBuffer": true
+  }
+}

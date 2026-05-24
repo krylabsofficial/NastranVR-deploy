@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nastran 2D Viewer - Desktop Flythrough</title>
+    <link rel="stylesheet" href="css/main.css">
+    <style>
+        /* 2D-specific styles */
+        #viewer-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+        }
+        
+        #viewer-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        
+        /* FPS-style help overlay - keyboard layout style */
+        #help-overlay {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(26, 26, 46, 0.95);
+            color: #fff;
+            padding: 20px 30px;
+            border-radius: 12px;
+            border: 3px solid #43e97b;
+            font-size: 0.85em;
+            pointer-events: none;
+            z-index: 100;
+            max-width: 95%;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            transition: opacity 1s ease-out;
+        }
+        
+        #help-overlay.hidden {
+            display: none;
+        }
+        
+        #help-overlay.fading {
+            opacity: 0;
+        }
+        
+        .help-title {
+            text-align: center;
+            color: #43e97b;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        
+        .keyboard-layout {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        
+        .keyboard-section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .keyboard-row {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+        }
+        
+        .key {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(180deg, #3a3a4e 0%, #2a2a3e 100%);
+            border: 2px solid #43e97b;
+            border-radius: 6px;
+            padding: 8px 10px;
+            font-weight: bold;
+            color: #43e97b;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+            min-width: 45px;
+            min-height: 45px;
+            font-family: 'Courier New', monospace;
+            position: relative;
+        }
+        
+        .key.wide {
+            min-width: 80px;
+        }
+        
+        .key.wider {
+            min-width: 100px;
+        }
+        
+        .key-label {
+            font-size: 1.1em;
+        }
+        
+        .key-desc {
+            margin-top: 4px;
+            font-size: 0.7em;
+            color: #aaa;
+            font-weight: normal;
+            text-align: center;
+        }
+        
+        .section-title {
+            color: #43e97b;
+            font-size: 0.75em;
+            text-align: center;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .help-footer {
+            text-align: center;
+            margin-top: 15px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(67, 233, 123, 0.3);
+            color: #43e97b;
+            font-size: 0.8em;
+        }
+        
+        /* Top bar for FPS, model info */
+        #top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(26, 26, 46, 0.95);
+            color: #fff;
+            padding: 10px 20px;
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #43e97b;
+            z-index: 90;
+        }
+        
+        #fps-display {
+            color: #43e97b;
+            font-weight: bold;
+        }
+        
+        #model-name {
+            font-size: 1.1em;
+        }
+
+        #build-version {
+            position: fixed;
+            top: 4px;
+            left: 8px;
+            color: rgba(67, 233, 123, 0.45);
+            font-size: 0.65em;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 0.04em;
+            pointer-events: none;
+            z-index: 200;
+            user-select: none;
+        }
+        
+        /* Pointer lock prompt */
+        #pointer-lock-prompt {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(26, 26, 46, 0.95);
+            color: #fff;
+            padding: 30px 50px;
+            border-radius: 12px;
+            border: 3px solid #43e97b;
+            text-align: center;
+            z-index: 200;
+            display: none;
+        }
+        
+        #pointer-lock-prompt h3 {
+            margin-top: 0;
+            color: #43e97b;
+        }
+        
+        #pointer-lock-prompt button {
+            margin-top: 20px;
+            padding: 12px 30px;
+            font-size: 1.1em;
+            background: #43e97b;
+            color: #1a1a2e;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        #pointer-lock-prompt button:hover {
+            background: #5fffb0;
+        }
+        
+        /* Navigation Mode Selector */
+        #navigation-mode-selector {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(26, 26, 46, 0.97);
+            z-index: 250;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        .mode-selector-container {
+            max-width: 900px;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .mode-selector-title {
+            font-size: 2.5em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+        
+        .mode-selector-subtitle {
+            font-size: 1.1em;
+            color: #a0a0b0;
+            margin-bottom: 40px;
+        }
+        
+        .mode-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+        
+        .mode-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(67, 233, 123, 0.3);
+            border-radius: 16px;
+            padding: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .mode-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(67, 233, 123, 0.1) 0%, rgba(56, 249, 215, 0.1) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .mode-card:hover {
+            transform: translateY(-8px);
+            border-color: #43e97b;
+            box-shadow: 0 20px 40px rgba(67, 233, 123, 0.3);
+        }
+        
+        .mode-card:hover::before {
+            opacity: 1;
+        }
+        
+        .mode-icon {
+            font-size: 3.5em;
+            margin-bottom: 15px;
+        }
+        
+        .mode-title {
+            font-size: 1.6em;
+            color: #43e97b;
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .mode-description {
+            font-size: 0.95em;
+            color: #b0b0c0;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .mode-features {
+            list-style: none;
+            padding: 0;
+            text-align: left;
+            margin: 0 auto 20px;
+            max-width: 280px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .mode-features li {
+            font-size: 0.85em;
+            color: #90909f;
+            padding: 5px 0 5px 24px;
+            position: relative;
+        }
+        
+        .mode-features li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #43e97b;
+            font-weight: bold;
+        }
+        
+        .mode-switch-info {
+            font-size: 0.8em;
+            color: #707080;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .mode-switch-info strong {
+            color: #43e97b;
+            font-weight: 600;
+        }
+        
+        @media (max-width: 768px) {
+            .mode-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .mode-selector-title {
+                font-size: 2em;
+            }
+        }
+        
+        /* FPS Crosshair */
+        #crosshair {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            pointer-events: none;
+            z-index: 150;
+            display: none;
+        }
+        
+        #crosshair::before,
+        #crosshair::after {
+            content: '';
+            position: absolute;
+            background: rgba(67, 233, 123, 0.8);
+        }
+        
+        #crosshair::before {
+            left: 50%;
+            top: 0;
+            width: 2px;
+            height: 100%;
+            transform: translateX(-50%);
+        }
+        
+        #crosshair::after {
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            transform: translateY(-50%);
+        }
+        
+        .scaling-btn, .geom-scaling-btn {
+            background: #2a2a3e;
+            color: #fff;
+            border: 2px solid #43e97b;
+            border-radius: 6px;
+            padding: 8px 18px;
+            margin: 0 8px 8px 0;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        .geom-scaling-btn {
+            border-color: #99cc66;
+        }
+        .scaling-btn.selected {
+            background: #43e97b;
+            color: #1a1a2e;
+            border-color: #fff;
+        }
+        .geom-scaling-btn.selected {
+            background: #99cc66;
+            color: #1a1a2e;
+            border-color: #fff;
+        }
+        #selected-scaling-factor, #selected-geom-scaling-factor {
+            margin-top: 8px;
+            font-weight: bold;
+            color: #43e97b;
+            font-size: 1.1em;
+        }
+        #selected-geom-scaling-factor {
+            color: #99cc66;
+        }
+        
+        #launch-viewer-btn {
+            background: #43e97b;
+            color: #1a1a2e;
+            border: 2px solid #43e97b;
+            border-radius: 8px;
+            padding: 12px 30px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        #launch-viewer-btn:hover:not(:disabled) {
+            background: #5fffb0;
+            border-color: #5fffb0;
+            transform: scale(1.05);
+        }
+        
+        #launch-viewer-btn:disabled {
+            background: #444;
+            color: #888;
+            border-color: #555;
+            cursor: not-allowed;
+        }
+
+        /* STEP loading progress bar */
+        #step-progress-container {
+            margin-top: 12px;
+            padding: 10px 12px;
+            background: rgba(153, 204, 102, 0.07);
+            border-radius: 8px;
+            border: 1px solid rgba(153, 204, 102, 0.3);
+        }
+        #step-progress-label {
+            color: #99cc66;
+            font-size: 0.82em;
+            margin-bottom: 8px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        #step-progress-track {
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            height: 6px;
+            position: relative;
+        }
+        #step-progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #43e97b, #99cc66);
+            border-radius: 4px;
+            transition: width 0.25s ease;
+        }
+        #step-progress-bar.indeterminate {
+            width: 40%;
+            animation: step-bar-slide 1.6s linear infinite;
+        }
+        @keyframes step-bar-slide {
+            0%   { margin-left: -40%; }
+            100% { margin-left: 100%; }
+        }
+        #step-progress-detail {
+            color: #888;
+            font-size: 0.75em;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="build-version">Build 26.05.21</div>
+
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <div class="loading-content">
+            <h1>Nastran 2D Viewer</h1>
+            <p>Loading application...</p>
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+    <!-- File Upload UI -->
+    <div id="upload-ui" style="display: none;">
+        <div class="upload-container">
+            <h2>Load Model Files</h2>
+
+            <!-- Scrollable content area -->
+            <div style="overflow-y: auto; flex: 1; min-height: 0;">
+            
+            <!-- Nastran BDF Section -->
+            <div style="margin-bottom: 20px;">
+                <h3 style="color: #43e97b; margin-bottom: 10px;">Nastran FEM Model</h3>
+                <div class="file-input-wrapper">
+                    <input type="file" id="bdf-file-input" accept=".bdf,.nas,.dat" />
+                    <label for="bdf-file-input">Choose BDF File</label>
+                </div>
+                <div class="scaling-factor-wrapper" style="margin-top: 1em;">
+                    <label>FEM Scaling Factor:</label>
+                    <div id="scaling-factor-buttons">
+                        <button type="button" data-factor="1.0" class="scaling-btn selected">Meters (1.0)</button>
+                        <button type="button" data-factor="39.37" class="scaling-btn">Inches (39.37)</button>
+                        <button type="button" data-factor="1000" class="scaling-btn">Millimeters (1000)</button>
+                    </div>
+                    <div id="selected-scaling-factor">Selected Scaling Factor: Meters (1.0)</div>
+                </div>
+            </div>
+            
+            <!-- STEP Geometry Section -->
+            <div style="margin-bottom: 20px; border-top: 1px solid #43e97b; padding-top: 20px;">
+                <h3 style="color: #99cc66; margin-bottom: 10px;">STEP/STP/IGES Geometry (Optional)</h3>
+                <div class="file-input-wrapper">
+                    <input type="file" id="step-file-input" accept=".step,.stp,.iges,.igs" multiple />
+                    <label for="step-file-input">Choose STEP/IGES File(s)</label>
+                </div>
+                <div class="scaling-factor-wrapper" style="margin-top: 1em;">
+                    <label>Geometry Scaling Factor:</label>
+                    <div id="geom-scaling-factor-buttons">
+                        <button type="button" data-factor="1.0" class="geom-scaling-btn">Meters (1.0)</button>
+                        <button type="button" data-factor="39.37" class="geom-scaling-btn">Inches (39.37)</button>
+                        <button type="button" data-factor="1000" class="geom-scaling-btn selected">Millimeters (1000)</button>
+                    </div>
+                    <div id="selected-geom-scaling-factor">Selected Scaling Factor: Millimeters (1000)</div>
+                </div>
+            </div>
+            
+            <div id="file-info" class="file-info"></div>
+
+            <!-- STEP loading progress -->
+            <div id="step-progress-container" style="display:none;">
+                <div id="step-progress-label">Loading STEP file...</div>
+                <div id="step-progress-track">
+                    <div id="step-progress-bar" class="indeterminate"></div>
+                </div>
+                <div id="step-progress-detail">Processing...</div>
+            </div>
+
+            </div><!-- end scrollable area -->
+
+            <!-- Launch button stays pinned below scroll area -->
+            <div style="display: flex; gap: 10px; justify-content: center; margin-top: 10px; flex-shrink: 0;">
+                <button id="launch-viewer-btn" disabled>Launch 2D Viewer</button>
+            </div>
+            <div id="model-stats" class="model-stats"></div>
+        </div>
+    </div>
+
+    <!-- 2D Viewer Container -->
+    <div id="viewer-container">
+        <!-- Top bar -->
+        <div id="top-bar">
+            <div id="model-name">Model Name</div>
+            <div id="interrogation-info" style="color: #ffd700; font-weight: bold;"></div>
+            <div>
+                <span id="interrogation-mode-indicator" style="color: #4a90e2; font-weight: bold; margin-right: 15px; display: none;">🎯 MANIPULATION MODE</span>
+                <span id="geom-translate-indicator" style="color: #99cc66; font-weight: bold; margin-right: 15px; display: none;">✥ TRANSLATE GEOM</span>
+                <span id="flag-count-indicator" style="color: #ff4444; font-weight: bold; margin-right: 15px; display: none;">🚩 0</span>
+                <span id="boost-indicator" style="color: #ff8c42; font-weight: bold; margin-right: 15px; display: none;">⚡ BOOST</span>
+                <span id="precision-mode-indicator" style="color: #43e97b; font-weight: bold; margin-right: 15px; display: none;">⚡ PRECISION MODE</span>
+                <span id="fps-display">FPS: -- | FOV: <span id="fov-display">--</span>°</span>
+            </div>
+        </div>
+        
+        <!-- Main canvas (Three.js renders here) -->
+        <canvas id="viewer-canvas"></canvas>
+        
+        <!-- FPS Crosshair -->
+        <div id="crosshair"></div>
+        
+        <!-- Help overlay -->
+        <div id="help-overlay">
+            <div class="help-title">🎮 Keyboard Controls</div>
+            
+            <div class="keyboard-layout">
+                <!-- Number keys section -->
+                <div class="keyboard-section">
+                    <div class="section-title">Quick Actions</div>
+                    <div class="keyboard-row">
+                        <div class="key">
+                            <div class="key-label">1</div>
+                            <div class="key-desc">FEM α</div>
+                        </div>
+                        <div class="key">
+                            <div class="key-label">2</div>
+                            <div class="key-desc">Node ⚫</div>
+                        </div>
+                        <div class="key">
+                            <div class="key-label">3</div>
+                            <div class="key-desc">Shrink</div>
+                        </div>
+                        <div class="key">
+                            <div class="key-label">4</div>
+                            <div class="key-desc">Wagon</div>
+                        </div>
+                        <div class="key">
+                            <div class="key-label">5</div>
+                            <div class="key-desc">Thick</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Movement WASD section -->
+                <div class="keyboard-section">
+                    <div class="section-title">Movement</div>
+                    <div class="keyboard-row">
+                        <div class="key">
+                            <div class="key-label">Q</div>
+                            <div class="key-desc">Down</div>
+                        </div>
+                        <div class="key">
+                            <div class="key-label">W</div>
+                            <div class="key-desc">Fwd</div>
+                        </div>
+                        <div class="key">
+                            <div class="key-label">E</div>
+                            <div class="key-desc">Up</div>
+                        </div>
+                    </div>
+                    <div class="keyboard-row">
+                        <div class="key">
+                            <div class="key-label">A</div>
+                            <div class="key-desc">Left</div>
+                        </div>
+                        <div class="key">
+                            <div class="key-label">S</div>
+                            <div class="key-desc">Back</div>
+                        </div>
+                        <div class="key">
+                            <div class="key-label">D</div>
+                            <div class="key-desc">Right</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Modifiers section -->
+                <div class="keyboard-section">
+                    <div class="section-title">Modifiers</div>
+                    <div class="keyboard-row">
+                        <div class="key wider">
+                            <div class="key-label">Shift</div>
+                            <div class="key-desc">Sprint</div>
+                        </div>
+                    </div>
+                    <div class="keyboard-row">
+                        <div class="key">
+                            <div class="key-label">C</div>
+                            <div class="key-desc">Precise</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tools section -->
+                <div class="keyboard-section">
+                    <div class="section-title">Tools</div>
+                    <div class="keyboard-row">
+                        <div class="key">
+                            <div class="key-label">T</div>
+                            <div class="key-desc">Manip</div>
+                        </div>
+                        <div class="key wide">
+                            <div class="key-label">Space</div>
+                            <div class="key-desc">Pin</div>
+                        </div>
+                        <div class="key">
+                            <div class="key-label">Z</div>
+                            <div class="key-desc">Undo</div>
+                        </div>
+                    </div>
+                    <div class="keyboard-row">
+                        <div class="key">
+                            <div class="key-label">F</div>
+                            <div class="key-desc">Flag</div>
+                        </div>
+                        <div class="key">
+                            <div class="key-label">R</div>
+                            <div class="key-desc">Menu</div>
+                        </div>
+                        <div class="key">
+                            <div class="key-label">O</div>
+                            <div class="key-desc">Ortho</div>
+                        </div>
+                        <div class="key">
+                            <div class="key-label">X</div>
+                            <div class="key-desc">Cut</div>
+                        </div>
+                    </div>
+                    <div class="keyboard-row">
+                        <div class="key">
+                            <div class="key-label">N</div>
+                            <div class="key-desc">Nav</div>
+                        </div>
+                        <div class="key">
+                            <div class="key-label">H</div>
+                            <div class="key-desc">Help</div>
+                        </div>
+                        <div class="key wide">
+                            <div class="key-label">ESC</div>
+                            <div class="key-desc">Exit</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Mouse section -->
+                <div class="keyboard-section">
+                    <div class="section-title">Mouse</div>
+                    <div class="keyboard-row">
+                        <div class="key wide">
+                            <div class="key-label">🖱️</div>
+                            <div class="key-desc">Look</div>
+                        </div>
+                    </div>
+                    <div class="keyboard-row">
+                        <div class="key wide">
+                            <div class="key-label">Scroll</div>
+                            <div class="key-desc">FOV</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="help-footer">
+                Press <strong>H</strong> to toggle this guide • Auto-hides in 20s
+            </div>
+        </div>
+        
+        <!-- Navigation Mode Selector -->
+        <div id="navigation-mode-selector" style="display: none;">
+            <div class="mode-selector-container">
+                <h2 class="mode-selector-title">Choose Navigation Mode</h2>
+                <p class="mode-selector-subtitle">Select how you want to explore the model</p>
+                
+                <div class="mode-grid">
+                    <!-- FPS Mode -->
+                    <div class="mode-card" id="select-fps-mode">
+                        <div class="mode-icon">🎮</div>
+                        <h3 class="mode-title">FPV Navigation</h3>
+                        <p class="mode-description">Immersive first-person view controls with pointer lock</p>
+                        <ul class="mode-features">
+                            <li>Click to lock mouse cursor</li>
+                            <li>Smooth mouse look (360°)</li>
+                            <li>WASD movement controls</li>
+                            <li>Fastest, most responsive</li>
+                        </ul>
+                        <div class="mode-switch-info">Switch: Press <strong>N</strong> key</div>
+                    </div>
+                    
+                    <!-- Orbital Mode -->
+                    <div class="mode-card" id="select-orbital-mode">
+                        <div class="mode-icon">🖱️</div>
+                        <h3 class="mode-title">Orbital Navigation</h3>
+                        <p class="mode-description">Drag-to-rotate controls (ideal for Remote Desktop)</p>
+                        <ul class="mode-features">
+                            <li>Hold RMB + drag to rotate</li>
+                            <li>No pointer lock required</li>
+                            <li>WASD movement controls</li>
+                            <li>Works great over RDP</li>
+                        </ul>
+                        <div class="mode-switch-info">Switch: Press <strong>N</strong> key</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pointer lock prompt (legacy, hidden by default) -->
+        <div id="pointer-lock-prompt" style="display: none;">
+            <h3>Click to Control Camera</h3>
+            <p>Use mouse to look around, WASD to move</p>
+            <button id="request-pointer-lock">Start</button>
+        </div>
+    </div>
+
+    <!-- Error Display -->
+    <div id="error-display" style="display: none;">
+        <div class="error-content">
+            <h3>Error</h3>
+            <p id="error-message"></p>
+            <button onclick="location.reload()">Reload</button>
+        </div>
+    </div>
+
+    <!-- Load Three.js -->
+    <script src="libs/three.min.js"></script>
+    
+    <!-- Load shared modules -->
+    <script src="js/shared/utils.js"></script>
+    <script src="js/shared/nastran-parser.js"></script>
+    <script src="js/shared/step-loader.js"></script>
+    
+    <!-- Hangar environment (Vibe and Chill mode) -->
+    <script src="js/shared/hangar-environment.js"></script>
+    
+    <!-- Load 2D-specific modules -->
+    <script src="js/2d/fps-controls.js"></script>
+    <script src="js/2d/menu2d.js"></script>
+    <script src="js/2d/app2d.js"></script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>KrylabsVR Mobile - Coming Soon</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 500px;
+        }
+
+        .icon {
+            font-size: 6em;
+            margin-bottom: 30px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        h1 {
+            font-size: 2.5em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+        }
+
+        p {
+            font-size: 1.1em;
+            color: #b0b0c0;
+            line-height: 1.8;
+            margin-bottom: 40px;
+        }
+
+        .back-btn {
+            display: inline-block;
+            padding: 14px 32px;
+            background: rgba(67, 233, 123, 0.1);
+            border: 2px solid #43e97b;
+            border-radius: 8px;
+            color: #43e97b;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: #43e97b;
+            color: #1a1a2e;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(67, 233, 123, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">📱</div>
+        <h1>Mobile Viewer</h1>
+        <p>The mobile version of KrylabsVR is currently under development. This will feature touch-optimized controls and a streamlined interface for tablets and smartphones.</p>
+        <a href="index.html" class="back-btn">← Back to Launcher</a>
+    </div>
+</body>
+</html>

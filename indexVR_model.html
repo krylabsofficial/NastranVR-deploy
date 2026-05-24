@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nastran VR Viewer - Embedded Model</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/vr-ui.css">
+    <style>
+        #auto-load-info {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(30, 30, 30, 0.95);
+            padding: 30px;
+            border-radius: 12px;
+            border: 2px solid #43e97b;
+            color: #fff;
+            text-align: center;
+            z-index: 1000;
+            max-width: 500px;
+        }
+        #auto-load-info h2 {
+            color: #43e97b;
+            margin-top: 0;
+        }
+        #auto-load-info .spinner {
+            margin: 20px auto;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <div class="loading-content">
+            <h1>Nastran VR Viewer</h1>
+            <p>Loading application...</p>
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+    <!-- Scaling factor selector (shown before loading) -->
+    <div id="scaling-selector" style="display: none;">
+        <div style="background: rgba(30, 30, 30, 0.95); padding: 40px; border-radius: 12px; border: 2px solid #43e97b; max-width: 500px;">
+            <h2 style="color: #43e97b; margin-top: 0;">Select Model Units</h2>
+            <p style="color: #fff; margin: 20px 0;">Choose the unit system for the embedded model:</p>
+            <p style="color: #fff; font-size: 0.9em; margin: 10px 0;">Model: <span style="color: #43e97b;">sample_model.bdf</span></p>
+            
+            <div style="margin-top: 30px;">
+                <button class="scaling-btn" data-factor="1.0" style="
+                    background: #2a2a3e;
+                    color: #fff;
+                    border: 2px solid #43e97b;
+                    border-radius: 6px;
+                    padding: 12px 24px;
+                    margin: 8px;
+                    font-size: 1.1em;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                ">Meters (1.0)</button>
+                
+                <button class="scaling-btn" data-factor="39.37" style="
+                    background: #2a2a3e;
+                    color: #fff;
+                    border: 2px solid #43e97b;
+                    border-radius: 6px;
+                    padding: 12px 24px;
+                    margin: 8px;
+                    font-size: 1.1em;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                ">Inches (39.37)</button>
+                
+                <button class="scaling-btn" data-factor="1000" style="
+                    background: #2a2a3e;
+                    color: #fff;
+                    border: 2px solid #43e97b;
+                    border-radius: 6px;
+                    padding: 12px 24px;
+                    margin: 8px;
+                    font-size: 1.1em;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                ">Millimeters (1000)</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Auto-load info -->
+    <div id="auto-load-info" style="display: none;">
+        <h2>Loading Embedded Model</h2>
+        <p>Automatically loading model data...</p>
+        <div class="spinner"></div>
+        <p id="loading-units-info" style="margin-top: 20px; font-size: 0.9em; color: #43e97b;">
+            Model: sample_model.bdf<br>
+            Scaling: <span id="selected-scale-display">Meters (1.0)</span>
+        </p>
+        <div id="debug-status" style="margin-top: 20px; font-family: monospace; font-size: 0.8em; color: #fff; text-align: left; max-width: 400px; margin-left: auto; margin-right: auto;"></div>
+    </div>
+
+    <!-- VR Scene Container -->
+    <div id="vr-container"></div>
+
+    <!-- Hidden dummy elements for app initialization (not used in embedded mode) -->
+    <input type="file" id="bdf-file-input" style="display: none;" />
+    <input type="file" id="step-file-input" style="display: none;" />
+    <button id="enter-vr-btn" style="display: none;"></button>
+    <div id="file-info" style="display: none;"></div>
+    <div id="model-stats" style="display: none;"></div>
+    <div id="upload-ui" style="display: none;"></div>
+
+    <!-- In-VR UI Panel (will be positioned in 3D space) -->
+    <div id="vr-info-panel" style="display: none;">
+        <div class="vr-panel-content">
+            <h3>Model Information</h3>
+            <div id="vr-stats"></div>
+        </div>
+    </div>
+
+    <!-- Error Display -->
+    <div id="error-display" style="display: none;">
+        <div class="error-content">
+            <h3>Error</h3>
+            <p id="error-message"></p>
+            <button onclick="location.reload()">Reload</button>
+        </div>
+    </div>
+
+    <!-- Embedded BDF Data -->
+    <script id="embedded-bdf-data" type="text/plain">
+$ Sample Nastran BDF Model
+$ Simple beam structure with shell and bar elements
+$ Created for Nastran VR Viewer demonstration
+$
+BEGIN BULK
+$
+$ GRID Cards - Nodes
+$ GRID    ID      CP      X       Y       Z
+GRID    1       0       0.0     0.0     0.0
+GRID    2       0       10.0    0.0     0.0
+GRID    3       0       10.0    10.0    0.0
+GRID    4       0       0.0     10.0    0.0
+GRID    5       0       0.0     0.0     10.0
+GRID    6       0       10.0    0.0     10.0
+GRID    7       0       10.0    10.0    10.0
+GRID    8       0       0.0     10.0    10.0
+GRID    9       0       5.0     0.0     0.0
+GRID    10      0       5.0     10.0    0.0
+GRID    11      0       5.0     0.0     10.0
+GRID    12      0       5.0     10.0    10.0
+GRID    13      0       0.0     5.0     0.0
+GRID    14      0       10.0    5.0     0.0
+GRID    15      0       0.0     5.0     10.0
+GRID    16      0       10.0    5.0     10.0
+GRID    17      0       5.0     5.0     0.0
+GRID    18      0       5.0     5.0     10.0
+$
+$ CQUAD4 Cards - Quadrilateral Shell Elements
+$ CQUAD4  EID     PID     G1      G2      G3      G4
+CQUAD4  1       1       1       2       14      13
+CQUAD4  2       1       2       3       10      14
+CQUAD4  3       1       3       4       13      10
+CQUAD4  4       1       4       1       13      4
+CQUAD4  5       1       5       6       16      15
+CQUAD4  6       1       6       7       12      16
+CQUAD4  7       1       7       8       15      12
+CQUAD4  8       1       8       5       15      8
+CQUAD4  9       1       1       2       6       5
+CQUAD4  10      1       2       3       7       6
+CQUAD4  11      1       3       4       8       7
+CQUAD4  12      1       4       1       5       8
+$
+$ CTRIA3 Cards - Triangular Shell Elements
+$ CTRIA3  EID     PID     G1      G2      G3
+CTRIA3  101     1       9       14      17
+CTRIA3  102     1       10      17      14
+CTRIA3  103     1       11      16      18
+CTRIA3  104     1       12      18      16
+$
+$ CBAR Cards - Bar Elements
+$ CBAR    EID     PID     GA      GB      X1      X2      X3
+CBAR    201     2       1       9       0.0     1.0     0.0
+CBAR    202     2       9       2       0.0     1.0     0.0
+CBAR    203     2       4       10      0.0     1.0     0.0
+CBAR    204     2       10      3       0.0     1.0     0.0
+CBAR    205     2       5       11      0.0     1.0     0.0
+CBAR    206     2       11      6       0.0     1.0     0.0
+CBAR    207     2       8       12      0.0     1.0     0.0
+CBAR    208     2       12      7       0.0     1.0     0.0
+$
+$ CROD Cards - Rod Elements
+$ CROD    EID     PID     G1      G2
+CROD    301     3       1       7
+CROD    302     3       2       8
+CROD    303     3       3       5
+CROD    304     3       4       6
+$
+$ CBEAM Cards - Beam Elements
+$ CBEAM   EID     PID     GA      GB      X1      X2      X3
+CBEAM   401     4       13      16      0.0     0.0     1.0
+CBEAM   402     4       14      15      0.0     0.0     1.0
+CBEAM   403     4       17      18      0.0     0.0     1.0
+$
+$ Property Cards
+PSHELL  1       1       0.1
+PBAR    2       1       1.0     0.5     0.5
+PROD    3       1       0.25
+PBEAM   4       1       2.0     1.0     1.0
+$
+$ Material Card
+MAT1    1       3.0E7           0.3     0.283
+$
+RBE3    12560000        12560000 123456  1.0     123    1256515112565149
+        1256514612565142125651261256512512565124125651231256511712565116
+        1256511512565114125651131256511212565111125651101256510912565108
+        1256510712565106125651051256510412565103125651021256510112560152
+        1256015112560149125601461256014212560126125601251256012412560123
+        1256011712560116125601151256011412560113125601121256011112560110
+        1256010912560108125601071256010612560105125601041256010312560102
+        1256010112560100
+RBE2    1257000012570000 123    1257515112575149
+        1257514612575142125751261257512512575124125751231257511712575116
+        1257511512575114125751131257511212575111125751101257510912575108
+        1257510712575106125751051257510412575103125751021257510112570152
+        1257015112570149125701461257014212570126125701251257012412570123
+        1257011712570116125701151257011412570113125701121257011112570110
+        1257010912570108125701071257010612570105125701041257010312570102
+        1257010112570100        
+CORD2R  60000001         1117.48 -227.97 201.14 1135.198 .2829061336.383
+        1276.253896.2034-27.3653
+CORD2R         1         0.      0.      0.      0.      0.      10.    
+         10.     0.      0.             
+CORD2R  41000000        938.97620.000000150.7564939.32251.218695160.6758        $WRP COORD LHS (747BSB)
+        948.97000.000000150.4074
+CORD2R         2         39.37   0.      0.      39.37   0.      10.    
+         49.37   0.      0.                              
+CORD2R       100       0    557.      0.    273.    557.      0.893.3048+       
++       1177.305      0.    273.                 
+CORD1R  59100001511000065110000751100009                
+CORD2C  11000100        6570.0000.0000  -80.14366670.0000.0000  -80.1436
+        6670.0000.0000  19.8564 
+ENDDATA
+</script>
+
+    <!-- Load Three.js -->
+    <script src="libs/three.min.js"></script>
+    
+    <!-- WebXR Polyfill for broader compatibility -->
+    <script src="https://cdn.jsdelivr.net/npm/webxr-polyfill@latest/build/webxr-polyfill.min.js"></script>
+    
+    <!-- Load application modules -->
+    <script src="js/shared/utils.js"></script>
+    <script src="js/shared/nastran-parser.js"></script>
+    <script src="js/shared/step-loader.js"></script>
+    <script src="js/vr/vr-controller.js"></script>
+    <script src="js/vr/controller-menu.js"></script>
+    <script src="js/vr/hud.js"></script>
+    
+    <!-- Modified app loader that auto-loads embedded data -->
+    <script>
+        // Flag to tell app.js to skip the file upload UI
+        window.embeddedModelMode = true;
+        
+        // Default scaling factor (will be set by user selection)
+        window.model_scaling_factor = 1.0;
+        
+        // Function to add debug status
+        function addDebugStatus(message) {
+            console.log(message);
+            const debugDiv = document.getElementById('debug-status');
+            if (debugDiv) {
+                debugDiv.innerHTML += message + '<br>';
+            }
+        }
+        
+        // Show scaling selector and wait for user choice
+        function showScalingSelector() {
+            return new Promise((resolve) => {
+                const selector = document.getElementById('scaling-selector');
+                const loadingScreen = document.getElementById('loading-screen');
+                
+                console.log('showScalingSelector: hiding loading screen, showing selector');
+                
+                // Hide loading screen, show selector
+                if (loadingScreen) loadingScreen.style.display = 'none';
+                if (selector) {
+                    selector.style.cssText = `
+                        position: fixed;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        z-index: 10000;
+                        text-align: center;
+                        display: block !important;
+                    `;
+                    console.log('Scaling selector should now be visible');
+                }
+                
+                // Add click handlers to scaling buttons
+                const buttons = selector.querySelectorAll('.scaling-btn');
+                buttons.forEach(btn => {
+                    btn.addEventListener('mouseenter', function() {
+                        this.style.background = '#43e97b';
+                        this.style.color = '#1a1a2e';
+                        this.style.borderColor = '#fff';
+                    });
+                    btn.addEventListener('mouseleave', function() {
+                        this.style.background = '#2a2a3e';
+                        this.style.color = '#fff';
+                        this.style.borderColor = '#43e97b';
+                    });
+                    btn.addEventListener('click', function() {
+                        const factor = parseFloat(this.getAttribute('data-factor'));
+                        const label = this.textContent;
+                        window.model_scaling_factor = factor;
+                        
+                        // Update display
+                        const displaySpan = document.getElementById('selected-scale-display');
+                        if (displaySpan) displaySpan.textContent = label;
+                        
+                        // Hide selector
+                        if (selector) selector.style.display = 'none';
+                        
+                        console.log(`User selected scaling factor: ${factor} (${label})`);
+                        resolve(factor);
+                    });
+                });
+            });
+        }
+        
+        // Function to add debug status
+        function addDebugStatus(message) {
+            console.log(message);
+            const debugDiv = document.getElementById('debug-status');
+            if (debugDiv) {
+                debugDiv.innerHTML += message + '<br>';
+            }
+        }
+        
+        // Function to wait for app initialization
+        async function waitForApp(maxAttempts = 20) {
+            for (let i = 0; i < maxAttempts; i++) {
+                addDebugStatus(`Waiting for app... attempt ${i + 1}/${maxAttempts}`);
+                if (window.app) {
+                    return window.app;
+                }
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            throw new Error('App failed to initialize after ' + maxAttempts + ' attempts');
+        }
+        
+        // Auto-load embedded BDF data after app initializes
+        async function autoLoadEmbeddedModel() {
+            try {
+                console.log('=== AUTO-LOAD STARTING ===');
+                addDebugStatus('=== AUTO-LOAD STARTING ===');
+                
+                // First, show scaling selector and wait for user choice
+                console.log('Showing scaling factor selector...');
+                addDebugStatus('Showing scaling factor selector...');
+                const scalingFactor = await showScalingSelector();
+                console.log(`User selected scaling: ${scalingFactor}`);
+                addDebugStatus(`User selected scaling: ${scalingFactor}`);
+                
+                console.log('Auto-loading embedded BDF data...');
+                addDebugStatus('Auto-loading embedded BDF data...');
+                
+                // Show auto-load info
+                const autoLoadInfo = document.getElementById('auto-load-info');
+                if (autoLoadInfo) {
+                    autoLoadInfo.style.display = 'block';
+                }
+                
+                // Get embedded BDF data
+                const bdfScript = document.getElementById('embedded-bdf-data');
+                if (!bdfScript) {
+                    throw new Error('No embedded BDF data found!');
+                }
+                
+                const bdfContent = bdfScript.textContent.trim();
+                addDebugStatus(`Loaded BDF data: ${bdfContent.length} chars`);
+                
+                // Scaling factor already set by user selection
+                addDebugStatus(`Using scaling factor: ${window.model_scaling_factor}`);
+                
+                // Wait for app to initialize
+                addDebugStatus('Waiting for app to initialize...');
+                const app = await waitForApp();
+                addDebugStatus('App initialized successfully!');
+                
+                // Hide loading screen and auto-load info
+                if (app.loadingScreen) {
+                    app.loadingScreen.style.display = 'none';
+                }
+                if (autoLoadInfo) {
+                    // Keep it visible for now to show debug status
+                    // autoLoadInfo.style.display = 'none';
+                }
+                
+                // Parse the BDF data
+                addDebugStatus('Parsing embedded BDF data...');
+                const parser = new NastranParser();
+                const modelData = parser.parse(bdfContent);
+                
+                // Store model data in app
+                app.modelData = modelData;
+                app.loadedBdfFile = 'sample_model.bdf';
+                app.bdfScalingFactor = window.model_scaling_factor;
+                
+                // Display statistics (stats are in modelData.stats)
+                const stats = modelData.stats;
+                addDebugStatus('Model stats: ' + JSON.stringify(stats));
+                
+                // Create visualization
+                addDebugStatus('Creating model visualization...');
+                app.createModelVisualization();
+                
+                // Show VR button (but don't require file upload UI)
+                addDebugStatus('Model loaded successfully! Ready for VR.');
+                
+                // Create a simple "Enter VR" button overlay
+                const vrButtonOverlay = document.createElement('div');
+                vrButtonOverlay.id = 'vr-button-overlay';
+                vrButtonOverlay.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    z-index: 1000;
+                    text-align: center;
+                `;
+                vrButtonOverlay.innerHTML = `
+                    <div style="background: rgba(30, 30, 30, 0.95); padding: 30px; border-radius: 12px; border: 2px solid #43e97b;">
+                        <h2 style="color: #43e97b; margin-top: 0;">Model Loaded</h2>
+                        <p style="color: #fff; margin: 20px 0;">sample_model.bdf</p>
+                        <p style="color: #999; font-size: 0.9em; margin: 10px 0;">
+                            ${stats.nodeCount} nodes, ${stats.cquad4Count + stats.ctria3Count} shells, ${stats.cbarCount + stats.crodCount} bars
+                        </p>
+                        <button id="embedded-enter-vr-btn" style="
+                            background: #43e97b;
+                            color: #1a1a2e;
+                            border: none;
+                            padding: 15px 40px;
+                            font-size: 1.2em;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            font-weight: bold;
+                        ">Enter VR</button>
+                    </div>
+                `;
+                document.body.appendChild(vrButtonOverlay);
+                
+                // Wire up the button
+                document.getElementById('embedded-enter-vr-btn').addEventListener('click', () => {
+                    addDebugStatus('Enter VR button clicked');
+                    vrButtonOverlay.style.display = 'none';
+                    if (autoLoadInfo) autoLoadInfo.style.display = 'none';
+                    app.enterVR();
+                });
+                
+                addDebugStatus('=== AUTO-LOAD COMPLETE ===');
+                    
+            } catch (error) {
+                addDebugStatus('ERROR: ' + error.message);
+                console.error('Error during auto-load:', error);
+                const autoLoadInfo = document.getElementById('auto-load-info');
+                if (autoLoadInfo) {
+                    autoLoadInfo.innerHTML = `
+                        <h2 style="color: #e74c3c;">Error Loading Model</h2>
+                        <p>${error.message}</p>
+                        <div id="debug-status" style="margin-top: 20px; font-family: monospace; font-size: 0.8em; color: #fff; text-align: left; max-width: 400px; margin-left: auto; margin-right: auto;"></div>
+                        <button onclick="location.reload()" style="margin-top: 20px; padding: 10px 20px; background: #43e97b; color: #1a1a2e; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">Reload</button>
+                    `;
+                    autoLoadInfo.style.display = 'block';
+                }
+            }
+        }
+        
+        // Start auto-load when page is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', autoLoadEmbeddedModel);
+        } else {
+            autoLoadEmbeddedModel();
+        }
+    </script>
+    
+    <!-- Load main app (but modified by script above) -->
+    <script src="js/vr/app.js"></script>
+</body>
+</html>

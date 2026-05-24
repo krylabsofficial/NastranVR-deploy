@@ -1,0 +1,225 @@
+{
+  "_comment": "KrylabsVR User Settings Template - v2.0.0",
+  "_description": "Copy this file to 'user_settings.json' and customize as needed",
+  "_usage": "Rename to user_settings.json to activate custom settings",
+  
+  "navigation": {
+    "_comment": "2D Desktop Mode Navigation - WASD + Mouse controls",
+    "_units": "moveSpeed in meters/second, sensitivity in radians/pixel",
+    
+    "moveSpeed": 2.5,
+    "fastSpeedMultiplier": 6.0,
+    "slowSpeedMultiplier": 0.083,
+    "mouseSensitivity": 0.002,
+    "fovZoomSpeed": 5,
+    "minFOV": 30,
+    "maxFOV": 120,
+    
+    "_rdpInfo": "RDP Mode + Delta Clamping work together to prevent Remote Desktop spinout",
+    "rdpModeEnabled": false,
+    "_rdpModeExplainer": "OFF by default. Enable for RDP: uses RMB drag instead of pointer lock",
+    "deltaClampEnabled": false,
+    "_deltaClampExplainer": "OFF by default. Enable for RDP: limits individual event magnitude",
+    "deltaClampMax": 50,
+    
+    "_examples": {
+      "slow_navigation": {"moveSpeed": 1.0, "mouseSensitivity": 0.001},
+      "fast_navigation": {"moveSpeed": 5.0, "mouseSensitivity": 0.003},
+      "presentation_mode": {"moveSpeed": 1.5, "fovZoomSpeed": 10},
+      "rdp_connection": {"rdpModeEnabled": true, "deltaClampEnabled": true, "deltaClampMax": 30},
+      "expert_no_clamp": {"deltaClampEnabled": false, "deltaClampMax": 50}
+    }
+  },
+  
+  "vrNavigation": {
+    "_comment": "VR Mode Navigation - Controller-based movement",
+    "_note": "Adjust these for headset-specific preferences",
+    
+    "baseMoveSpeed": 2.0,
+    "baseRotationSpeed": 1.0,
+    "moveSpeedBoost": 2.0,
+    "rotationDeBoost": 0.5
+  },
+  
+  "visualization": {
+    "_comment": "Visual appearance of nodes and elements",
+    "_colorFormat": "Use hex strings (#RRGGBB or 0xRRGGBB) - same format as CSS",
+    "_note": "Copy/paste directly from color pickers - no conversion needed!",
+    
+    "baseNodeSize": 0.05,
+    "nodeSizeOptions": [0.25, 1.0, 4.0],
+    "defaultNodeColor": "#43e97b",
+    "modifiedNodeColor": "#ff0000",
+    "duplicateNodeColor": "#ffa500",
+    "selectedElementColor": "#ff00ff",
+    "pinnedNodeColor": "#ffff00",
+    "highlightColor": "#ff00ff",
+    "femOpacities": [1.0, 0.25, 0.5, 0.75],
+    "shrinkFactor": 0.18,
+    "barShrinkFactor": 0.2,
+    "wagonwheelThreshold": 15,
+    
+    "_opacityInfo": "Press O to cycle through opacity levels",
+    "_shrinkInfo": "ShrinkFEM mode shrinks elements toward centroid for better visibility",
+    "_wagonwheelInfo": "Nodes with 15+ connections shown as wagonwheels",
+    
+    "_colorReference": {
+      "green": "#43e97b",
+      "red": "#ff0000",
+      "orange": "#ffa500",
+      "magenta": "#ff00ff",
+      "yellow": "#ffff00",
+      "blue": "#4a9eff",
+      "cyan": "#00ffff",
+      "white": "#ffffff"
+    }
+  },
+  
+  "manipulation": {
+    "_comment": "Node dragging and model manipulation",
+    "_note": "Press T to toggle manipulation mode, Space to pin nodes",
+    
+    "nodeDragSpeed": 1.0,
+    "pinNodeEnabled": true,
+    "showGuideCurves": true,
+    "guideLineLength": 1.0,
+    
+    "_examples": {
+      "precise_editing": {"nodeDragSpeed": 0.5, "guideLineLength": 0.5},
+      "fast_editing": {"nodeDragSpeed": 2.0, "guideLineLength": 2.0},
+      "no_guides": {"showGuideCurves": false}
+    }
+  },
+  
+  "elementColors": {
+    "_comment": "Element type colors - customize for company branding",
+    "_example": "Boeing might use '#0033AA' (Boeing blue)",
+    
+    "shells": "#4a9eff",
+    "bars": "#ff6b6b",
+    "rbe2": "#ffd93d",
+    "rbe3": "#6bcf7f",
+    "gridPrimary": "#43e97b",
+    "gridSecondary": "#2a2a3e"
+  },
+  
+  "geometry": {
+    "_comment": "CAD geometry (IGES/STEP files) visualization",
+    "_note": "Surface/edge colors for imported CAD models",
+    
+    "surfaceColor": "#99cc66",
+    "edgeColor": "#88bb55",
+    "wireframeOpacity": 0.8,
+    
+    "_examples": {
+      "bright_mode": {"surfaceColor": "#cceeaa", "edgeColor": "#99cc66"},
+      "dark_mode": {"surfaceColor": "#6b8e4d", "edgeColor": "#556b3d"},
+      "blueprint_style": {"surfaceColor": "#4a90e2", "edgeColor": "#2a6bb2"}
+    }
+  },
+  
+  "environment": {
+    "_comment": "Scene background and lighting setup",
+    "_note": "Lighting intensities range 0.0-1.0",
+    
+    "backgroundColor": "#1a1a2e",
+    "ambientLight": "#ffffff",
+    "ambientIntensity": 0.6,
+    "directionalLight": "#ffffff",
+    "directionalIntensity": 0.8,
+    "hemisphereTop": "#ddeeff",
+    "hemisphereBottom": "#0f0e0d",
+    "hemisphereIntensity": 0.5,
+    
+    "_presets": {
+      "studio_lighting": {"ambientIntensity": 0.5, "directionalIntensity": 1.0},
+      "soft_lighting": {"ambientIntensity": 0.8, "directionalIntensity": 0.5},
+      "dark_background": {"backgroundColor": "#0a0a0f"},
+      "light_background": {"backgroundColor": "#f5f5f5"}
+    }
+  },
+  
+  "ui": {
+    "_comment": "User interface visual elements",
+    "_note": "Axes follow aerospace convention: X=red, Y=green, Z=blue",
+    
+    "crosshairColor": "#ffff00",
+    "xAxisColor": "#ff0000",
+    "yAxisColor": "#00ff00",
+    "zAxisColor": "#0000ff",
+    
+    "_axisInfo": "Standard RGB axis coloring - X(red), Y(green), Z(blue)"
+  },
+  
+  "uiSettings": {
+    "_comment": "User interface behavior settings (not visual colors)",
+    
+    "helpOverlayAutoFade": true,
+    "helpOverlayFadeTime": 10,
+    "topBarEnabled": true,
+    "menuAnimations": true,
+    "keyRepeatDelay": 500
+  },
+  
+  "contours": {
+    "_comment": "Contour plot visualization",
+    "_colorSchemes": "Options: 'viridis', 'plasma', 'jet', 'rainbow', 'custom'",
+    "_customColorsNote": "Use hex strings for custom gradient - parsed automatically",
+    
+    "colorScheme": "viridis",
+    "customColors": ["#440154", "#31688e", "#35b779", "#fde724"],
+    "numLevels": 10,
+    "smoothing": true,
+    "showLabels": true,
+    "autoRange": true
+  },
+  
+  "performance": {
+    "_comment": "Performance tuning for different hardware",
+    "_recommendations": {
+      "high_end_desktop": {"pixelRatio": 2.0, "antialiasing": true},
+      "laptop_integrated": {"pixelRatio": 1.0, "antialiasing": true},
+      "older_hardware": {"pixelRatio": 1.0, "antialiasing": false}
+    },
+    
+    "interrogationThrottle": 100,
+    "fpsUpdateInterval": 0.5,
+    "antialiasing": true,
+    "pixelRatio": "auto",
+    "shadowsEnabled": false,
+    "proximityCheckInterval": 30
+  },
+  
+  "export": {
+    "_comment": "Export and save settings",
+    "_note": "screenshotWhiteBackground creates print-friendly images",
+    
+    "screenshotWhiteBackground": true,
+    "bdfFloatPrecision": 8,
+    "sessionAutoSave": false,
+    "sessionAutoSaveInterval": 300,
+    "timestampFormat": "YYYYMMDD_HHMMSS"
+  },
+  
+  "advanced": {
+    "menuAnimations": true,
+    "keyRepeatDelay": 500,
+    
+    "_useCases": {
+      "training_mode": {"helpOverlayAutoFade": false},
+      "demo_mode": {"helpOverlayFadeTime": 3, "topBarEnabled": false},
+      "production_mode": {"helpOverlayAutoFade": true, "menuAnimations": false}
+    }
+  },
+  
+  "advanced": {
+    "_comment": "Advanced settings - modify with care",
+    "_warning": "Changing these may affect stability",
+    
+    "debugMode": false,
+    "enableExperimentalFeatures": false,
+    "logLevel": "info",
+    "hardwareAcceleration": true,
+    "preserveDrawingBuffer": true
+  }
+}

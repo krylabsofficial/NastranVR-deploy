@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Krylabs Nastran.VR</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .header {
+            margin-bottom: 60px;
+        }
+
+        h1 {
+            font-size: 3.5em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            letter-spacing: -1px;
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            color: #a0a0b0;
+            font-weight: 300;
+        }
+
+        .viewer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .viewer-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(67, 233, 123, 0.2);
+            border-radius: 16px;
+            padding: 40px 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .viewer-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(67, 233, 123, 0.1) 0%, rgba(56, 249, 215, 0.1) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .viewer-card:hover {
+            transform: translateY(-8px);
+            border-color: #43e97b;
+            box-shadow: 0 20px 40px rgba(67, 233, 123, 0.2);
+        }
+
+        .viewer-card:hover::before {
+            opacity: 1;
+        }
+
+        .viewer-card.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .viewer-card.disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .card-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .viewer-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .viewer-title {
+            font-size: 1.8em;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #43e97b;
+        }
+
+        .viewer-description {
+            font-size: 0.95em;
+            color: #b0b0c0;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .viewer-features {
+            list-style: none;
+            padding: 0;
+            text-align: left;
+            margin-top: 20px;
+        }
+
+        .viewer-features li {
+            font-size: 0.85em;
+            color: #90909f;
+            padding: 6px 0;
+            padding-left: 24px;
+            position: relative;
+        }
+
+        .viewer-features li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #43e97b;
+            font-weight: bold;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-top: 12px;
+        }
+
+        .status-badge.active {
+            background: rgba(67, 233, 123, 0.2);
+            color: #43e97b;
+        }
+
+        .status-badge.coming-soon {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+        }
+
+        .footer {
+            margin-top: 40px;
+            color: #707080;
+            font-size: 0.9em;
+        }
+
+        .footer a {
+            color: #43e97b;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer a:hover {
+            color: #38f9d7;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5em;
+            }
+
+            .viewer-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Krylabs Nastran.VR</h1>
+            <p class="subtitle">Advanced NASTRAN Finite Element Visualization & Manipulation</p>
+        </div>
+
+        <div class="viewer-grid">
+            <!-- VR Mode -->
+            <div class="viewer-card" onclick="location.href='indexVR.html'">
+                <div class="card-content">
+                    <span class="viewer-icon">🥽</span>
+                    <h2 class="viewer-title">VR Mode</h2>
+                    <p class="viewer-description">Immersive WebXR experience with hand tracking. VR headset required</p>
+                    <ul class="viewer-features">
+                        <li>Full 6DOF VR controllers</li>
+                        <li>Sculpting & node manipulation</li>
+                        <li>Spatial geometry editing</li>
+                        <li>Multi-file support</li>
+                    </ul>
+                    <span class="status-badge active">Active</span>
+                </div>
+            </div>
+
+            <!-- 2D Desktop Mode -->
+            <div class="viewer-card" onclick="location.href='index2D.html'">
+                <div class="card-content">
+                    <span class="viewer-icon">🖥️</span>
+                    <h2 class="viewer-title">2D Desktop</h2>
+                    <p class="viewer-description">FPS-style desktop viewer with precision node manipulation</p>
+                    <ul class="viewer-features">
+                        <li>Keyboard + mouse controls</li>
+                        <li>Node push/pull mechanics</li>
+                        <li>Screenshot export</li>
+                        <li>Session management</li>
+                    </ul>
+                    <span class="status-badge active">Active</span>
+                </div>
+            </div>
+
+            <!-- Mobile Mode (Coming Soon) -->
+            <div class="viewer-card disabled">
+                <div class="card-content">
+                    <span class="viewer-icon">📱</span>
+                    <h2 class="viewer-title">Mobile</h2>
+                    <p class="viewer-description">Touch-optimized interface for tablets and smartphones</p>
+                    <ul class="viewer-features">
+                        <li>Touch gesture controls</li>
+                        <li>Mobile-friendly UI</li>
+                        <li>Lightweight rendering</li>
+                        <li>Cross-platform support</li>
+                    </ul>
+                    <span class="status-badge coming-soon">Coming Soon</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Built with Three.js &amp; WebXR &copy; 2026 KryLabs</p>
+        </div>
+    </div>
+</body>
+</html>

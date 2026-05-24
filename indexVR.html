@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nastran VR Viewer - WebXR</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/vr-ui.css">
+    <style>
+        .scaling-btn, .geom-scaling-btn {
+            background: #2a2a3e;
+            color: #fff;
+            border: 2px solid #43e97b;
+            border-radius: 6px;
+            padding: 8px 18px;
+            margin: 0 8px 8px 0;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        .geom-scaling-btn {
+            border-color: #99cc66;
+        }
+        .scaling-btn.selected {
+            background: #43e97b;
+            color: #1a1a2e;
+            border-color: #fff;
+        }
+        .geom-scaling-btn.selected {
+            background: #99cc66;
+            color: #1a1a2e;
+            border-color: #fff;
+        }
+        #selected-scaling-factor, #selected-geom-scaling-factor {
+            margin-top: 8px;
+            font-weight: bold;
+            color: #43e97b;
+            font-size: 1.1em;
+        }
+        #selected-geom-scaling-factor {
+            color: #99cc66;
+        }
+
+        /* STEP loading progress bar */
+        #step-progress-container {
+            margin-top: 12px;
+            padding: 10px 12px;
+            background: rgba(153, 204, 102, 0.07);
+            border-radius: 8px;
+            border: 1px solid rgba(153, 204, 102, 0.3);
+        }
+        #step-progress-label {
+            color: #99cc66;
+            font-size: 0.82em;
+            margin-bottom: 8px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        #step-progress-track {
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            height: 6px;
+            position: relative;
+        }
+        #step-progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #43e97b, #99cc66);
+            border-radius: 4px;
+            transition: width 0.25s ease;
+        }
+        #step-progress-bar.indeterminate {
+            width: 40%;
+            animation: step-bar-slide 1.6s linear infinite;
+        }
+        @keyframes step-bar-slide {
+            0%   { margin-left: -40%; }
+            100% { margin-left: 100%; }
+        }
+        #step-progress-detail {
+            color: #888;
+            font-size: 0.75em;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <div class="loading-content">
+            <h1>Nastran VR Viewer</h1>
+            <p>Loading application...</p>
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+    <!-- File Upload UI -->
+    <div id="upload-ui" style="display: none;">
+        <div class="upload-container">
+            <h2>Load Model Files</h2>
+
+            <!-- Scrollable content area -->
+            <div style="overflow-y: auto; flex: 1; min-height: 0;">
+
+            <!-- Nastran BDF Section -->
+            <div style="margin-bottom: 20px;">
+                <h3 style="color: #43e97b; margin-bottom: 10px;">Nastran FEM Model</h3>
+                <div class="file-input-wrapper">
+                    <input type="file" id="bdf-file-input" accept=".bdf,.nas,.dat" />
+                    <label for="bdf-file-input">Choose BDF File</label>
+                </div>
+                <div class="scaling-factor-wrapper" style="margin-top: 1em;">
+                    <label>FEM Scaling Factor:</label>
+                    <div id="scaling-factor-buttons">
+                        <button type="button" data-factor="1.0" class="scaling-btn selected">Meters (1.0)</button>
+                        <button type="button" data-factor="39.37" class="scaling-btn">Inches (39.37)</button>
+                        <button type="button" data-factor="1000" class="scaling-btn">Millimeters (1000)</button>
+                    </div>
+                    <div id="selected-scaling-factor">Selected Scaling Factor: Meters (1.0)</div>
+                </div>
+            </div>
+            
+            <!-- STEP Geometry Section -->
+            <div style="margin-bottom: 20px; border-top: 1px solid #43e97b; padding-top: 20px;">
+                <h3 style="color: #99cc66; margin-bottom: 10px;">STEP/STP/IGES Geometry (Optional)</h3>
+                <div class="file-input-wrapper">
+                    <input type="file" id="step-file-input" accept=".step,.stp,.iges,.igs" multiple />
+                    <label for="step-file-input">Choose STEP/IGES File(s)</label>
+                </div>
+                <div class="scaling-factor-wrapper" style="margin-top: 1em;">
+                    <label>Geometry Scaling Factor:</label>
+                    <div id="geom-scaling-factor-buttons">
+                        <button type="button" data-factor="1.0" class="geom-scaling-btn">Meters (1.0)</button>
+                        <button type="button" data-factor="39.37" class="geom-scaling-btn">Inches (39.37)</button>
+                        <button type="button" data-factor="1000" class="geom-scaling-btn selected">Millimeters (1000)</button>
+                    </div>
+                    <div id="selected-geom-scaling-factor">Selected Scaling Factor: Millimeters (1000)</div>
+                </div>
+            </div>
+            
+            <div id="file-info" class="file-info"></div>
+
+            <!-- STEP loading progress -->
+            <div id="step-progress-container" style="display:none;">
+                <div id="step-progress-label">Loading STEP file...</div>
+                <div id="step-progress-track">
+                    <div id="step-progress-bar" class="indeterminate"></div>
+                </div>
+                <div id="step-progress-detail">Processing...</div>
+            </div>
+
+            </div><!-- end scrollable area -->
+
+            <!-- Buttons pinned below scroll area -->
+            <div style="display: flex; gap: 10px; justify-content: center; margin-top: 10px; flex-shrink: 0;">
+                <button id="enter-vr-btn" disabled>Enter VR</button>
+                <button id="enter-empty-vr-btn">Enter Empty VR</button>
+            </div>
+            <div id="model-stats" class="model-stats"></div>
+        </div>
+    </div>
+
+    <!-- VR Scene Container -->
+    <div id="vr-container"></div>
+
+    <!-- In-VR UI Panel (will be positioned in 3D space) -->
+    <div id="vr-info-panel" style="display: none;">
+        <div class="vr-panel-content">
+            <h3>Model Information</h3>
+            <div id="vr-stats"></div>
+        </div>
+    </div>
+
+    <!-- Error Display -->
+    <div id="error-display" style="display: none;">
+        <div class="error-content">
+            <h3>Error</h3>
+            <p id="error-message"></p>
+            <button onclick="location.reload()">Reload</button>
+        </div>
+    </div>
+
+    <!-- Load Three.js -->
+    <script src="libs/three.min.js"></script>
+    
+    <!-- WebXR Polyfill for broader compatibility -->
+    <script src="https://cdn.jsdelivr.net/npm/webxr-polyfill@latest/build/webxr-polyfill.min.js"></script>
+    
+    <!-- Load application modules -->
+    <script src="js/shared/utils.js"></script>
+    <script src="js/shared/nastran-parser.js"></script>
+    <script src="js/shared/step-loader.js"></script>
+    <script src="js/shared/geometry-streaming.js"></script>
+    <script src="js/vr/vr-controller.js"></script>
+    <script src="js/vr/controller-menu.js"></script>
+    <script src="js/shared/hangar-environment.js"></script>
+    <script src="js/vr/hud.js"></script>
+    <script src="js/vr/app.js"></script>
+</body>
+</html>

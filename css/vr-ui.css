@@ -1,0 +1,188 @@
+/* VR-specific UI styles */
+
+/* In-VR Info Panel */
+#vr-info-panel {
+    position: absolute;
+    width: 400px;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid #43e97b;
+    border-radius: 10px;
+    color: white;
+    font-family: monospace;
+    font-size: 14px;
+}
+
+.vr-panel-content h3 {
+    color: #43e97b;
+    margin-bottom: 15px;
+    font-size: 18px;
+    border-bottom: 1px solid #43e97b;
+    padding-bottom: 10px;
+}
+
+#vr-stats div {
+    margin: 8px 0;
+    line-height: 1.6;
+}
+
+#vr-stats strong {
+    color: #38f9d7;
+    display: inline-block;
+    min-width: 150px;
+}
+
+/* VR Controller Hint */
+.vr-controller-hint {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.7);
+    padding: 15px 30px;
+    border-radius: 50px;
+    color: white;
+    font-size: 14px;
+    text-align: center;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+
+.vr-controller-hint.hidden {
+    opacity: 0;
+}
+
+/* VR Loading Indicator */
+.vr-loading {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 5000;
+}
+
+.vr-loading-spinner {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 20px;
+    border: 6px solid rgba(67, 233, 123, 0.3);
+    border-top-color: #43e97b;
+    border-radius: 50%;
+    animation: vr-spin 1s linear infinite;
+}
+
+@keyframes vr-spin {
+    to { transform: rotate(360deg); }
+}
+
+.vr-loading-text {
+    color: white;
+    font-size: 18px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* VR Session Info */
+.vr-session-info {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 10px 20px;
+    border-radius: 10px;
+    color: #43e97b;
+    font-size: 12px;
+    font-family: monospace;
+}
+
+/* VR Performance Monitor */
+.vr-performance {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 10px 15px;
+    border-radius: 5px;
+    color: #38f9d7;
+    font-size: 11px;
+    font-family: monospace;
+    line-height: 1.5;
+}
+
+.vr-performance div {
+    margin: 2px 0;
+}
+
+/* VR Crosshair/Reticle */
+.vr-reticle {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+.vr-reticle::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 4px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+}
+
+/* VR Menu Button */
+.vr-menu-button {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 25px;
+    background: rgba(67, 233, 123, 0.8);
+    color: #333;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+    transition: background 0.3s;
+}
+
+.vr-menu-button:hover {
+    background: rgba(67, 233, 123, 1);
+}
+
+/* VR Tooltip */
+.vr-tooltip {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 8px 15px;
+    border-radius: 5px;
+    font-size: 12px;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 5000;
+    border: 1px solid #43e97b;
+}
+
+.vr-tooltip::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid #43e97b;
+}
