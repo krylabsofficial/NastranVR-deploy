@@ -14,7 +14,12 @@
     "maxFOV": 120,
     "rdpModeEnabled": false,
     "deltaClampEnabled": false,
-    "deltaClampMax": 50
+    "deltaClampMax": 50,
+    "speedRampTime": 0.25,
+    "accelerationTime": 0.08,
+    "decelerationTime": 0.15,
+    "cinematicEffectsEnabled": true,
+    "strafeLeanIntensity": 1.0
   },
   
   "vrNavigation": {
@@ -27,7 +32,7 @@
   
   "visualization": {
     "_comment": "Node and element display settings",
-    "baseNodeSize": 0.05,
+    "baseNodeSize": 0.01,
     "nodeSizeOptions": [0.25, 1.0, 4.0],
     "defaultNodeColor": "#43e97b",
     "modifiedNodeColor": "#ff0000",
@@ -38,7 +43,16 @@
     "femOpacities": [1.0, 0.25, 0.5, 0.75],
     "shrinkFactor": 0.18,
     "barShrinkFactor": 0.2,
-    "wagonwheelThreshold": 15
+    "wagonwheelThreshold": 16,
+    "backgroundColor": "#1a1a2e",
+    "cquad4Color": "#4a90e2",
+    "ctria3Color": "#90e24a",
+    "cshearColor": "#e24a90",
+    "shellDefaultColor": "#cccccc",
+    "cbarColor": "#e9d043",
+    "crodColor": "#43e97b",
+    "cbeamColor": "#ff8c42",
+    "barDefaultColor": "#ffffff"
   },
   
   "manipulation": {
@@ -51,10 +65,8 @@
   
   "elementColors": {
     "_comment": "Colors for different element types (hex color strings)",
-    "shells": "#4a9eff",
-    "bars": "#ff6b6b",
-    "rbe2": "#ffd93d",
-    "rbe3": "#6bcf7f",
+    "rbe2": "#9c27b0",
+    "rbe3": "#9c27b0",
     "gridPrimary": "#43e97b",
     "gridSecondary": "#2a2a3e"
   },
@@ -64,18 +76,6 @@
     "surfaceColor": "#99cc66",
     "edgeColor": "#88bb55",
     "wireframeOpacity": 0.8
-  },
-  
-  "environment": {
-    "_comment": "Scene background and lighting colors",
-    "backgroundColor": "#1a1a2e",
-    "ambientLight": "#ffffff",
-    "ambientIntensity": 0.6,
-    "directionalLight": "#ffffff",
-    "directionalIntensity": 0.8,
-    "hemisphereTop": "#ddeeff",
-    "hemisphereBottom": "#0f0e0d",
-    "hemisphereIntensity": 0.5
   },
   
   "ui": {
@@ -99,6 +99,7 @@
   "performance": {
     "_comment": "Performance and rendering settings",
     "interrogationThrottle": 100,
+    "pickMaxDistance": 50,
     "fpsUpdateInterval": 0.5,
     "antialiasing": true,
     "pixelRatio": "auto",
